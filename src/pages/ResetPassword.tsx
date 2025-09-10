@@ -1,24 +1,80 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { EyeIcon, EyeOffIcon } from 'lucide-react'
+import { resetPassword } from '../service-api/auth'
 const ResetPassword = () => {
     const [newPassword, setNewPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const [showNewPassword, setShowNewPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+    const [email, setEmail] = useState('')
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState('')
+    const [successMessage, setSuccessMessage] = useState('')
     const navigate = useNavigate()
-    const handleSubmit = (e: React.FormEvent) => {
+    useEffect(() => {
+        // Get email from session storage
+        const resetEmail = sessionStorage.getItem('resetEmail')
+        if (resetEmail) {
+            setEmail(resetEmail)
+        } else {
+            // If no email in session storage, redirect to login
+            navigate('/login')
+        }
+    }, [navigate])
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        // Handle password reset logic here
-        navigate('/login')
+        setError('')
+        setSuccessMessage('')
+        // Validate passwords match
+        if (newPassword !== confirmPassword) {
+            setError('Passwords do not match')
+            return
+        }
+        // Validate password strength
+        if (newPassword.length < 8) {
+            setError('Password must be at least 8 characters long')
+            return
+        }
+        setIsLoading(true)
+        try {
+            const response = await resetPassword(email, newPassword)
+            // Show success message
+            setSuccessMessage(response || 'Password reset successful!')
+            // Clear reset email from session storage
+            sessionStorage.removeItem('resetEmail')
+            // Navigate to login page after a short delay
+            setTimeout(() => {
+                navigate('/login')
+            }, 2000)
+        } catch (err) {
+            console.error('Error resetting password:', err)
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : 'Failed to reset password. Please try again.',
+            )
+        } finally {
+            setIsLoading(false)
+        }
     }
     return (
-        <div className="min-h-screen bg-[#F7F9FC] flex flex-col items-center justify-center px-4">
-            <div className="w-5/12 ">
+        <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4">
+            <div className="w-full max-w-md">
                 <h2 className="text-2xl font-bold text-[#0F172A] mb-6">
-                    Password Reset
+                    Reset Password
                 </h2>
                 <div className="bg-white rounded-xl p-8 border shadow-[0_0_24px_rgba(16,24,40,0.06)]">
+                    {error && (
+                        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+                            {error}
+                        </div>
+                    )}
+                    {successMessage && (
+                        <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-600 rounded-lg text-sm">
+                            {successMessage}
+                        </div>
+                    )}
                     <form onSubmit={handleSubmit}>
                         <div className="mb-4">
                             <label
@@ -81,9 +137,36 @@ const ResetPassword = () => {
                         <div className="flex justify-end">
                             <button
                                 type="submit"
-                                className="bg-[#2F77FF] text-white px-6 py-3 rounded-lg hover:bg-blue-600"
+                                disabled={isLoading}
+                                className={`bg-[#2F77FF] text-white px-6 py-3 rounded-lg hover:bg-blue-600 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                             >
-                                Log in
+                                {isLoading ? (
+                                    <div className="flex items-center justify-center">
+                                        <svg
+                                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <circle
+                                                className="opacity-25"
+                                                cx="12"
+                                                cy="12"
+                                                r="10"
+                                                stroke="currentColor"
+                                                strokeWidth="4"
+                                            ></circle>
+                                            <path
+                                                className="opacity-75"
+                                                fill="currentColor"
+                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                            ></path>
+                                        </svg>
+                                        Resetting...
+                                    </div>
+                                ) : (
+                                    'Reset Password'
+                                )}
                             </button>
                         </div>
                     </form>
