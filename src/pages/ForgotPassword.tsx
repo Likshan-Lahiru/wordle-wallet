@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, createElement } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { verifyResetCode } from '../service-api/auth'
+import { verifyResetCode, resendPasswordResetCode } from '../service-api/auth'
 const ForgotPassword = () => {
     const [verificationCode, setVerificationCode] = useState([
         '',
@@ -12,6 +12,7 @@ const ForgotPassword = () => {
     ])
     const [email, setEmail] = useState('')
     const [isLoading, setIsLoading] = useState(false)
+    const [isResending, setIsResending] = useState(false)
     const [error, setError] = useState('')
     const [successMessage, setSuccessMessage] = useState('')
     const inputRefs = useRef<(HTMLInputElement | null)[]>([])
@@ -80,9 +81,22 @@ const ForgotPassword = () => {
         }
     }
     const handleResendCode = async () => {
-        // This would typically call the requestPasswordReset function again
-        // For now, just show a message
-        toast('Verification code resent to your email')
+        if (isResending) return
+        setError('')
+        setIsResending(true)
+        try {
+            const message = await resendPasswordResetCode(email)
+            toast(message)
+        } catch (err) {
+            console.error('Error resending code:', err)
+            setError(
+                err instanceof Error
+                    ? err.message
+                    : 'Failed to resend verification code. Please try again.',
+            )
+        } finally {
+            setIsResending(false)
+        }
     }
     // Simple toast function
     const toast = (message: string) => {
@@ -134,9 +148,9 @@ const ForgotPassword = () => {
                         <button
                             onClick={handleResendCode}
                             className="text-[#5B6472] font-light text-xs hover:underline"
-                            disabled={isLoading}
+                            disabled={isResending || isLoading}
                         >
-                            Resend Code?
+                            {isResending ? 'Sending...' : 'Resend Code?'}
                         </button>
                         <button
                             onClick={handleVerify}
