@@ -1,4 +1,4 @@
-import { API_CONFIG } from './api.ts'
+import { API_CONFIG } from './config.ts'
 interface CreateAccountRequest {
     userId: string
 }

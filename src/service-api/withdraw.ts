@@ -1,4 +1,5 @@
-import { API_CONFIG } from './api.ts'
+
+
 interface GiftCardValidationResponse {
     transactionId: string
     faceValue: number
@@ -7,8 +8,10 @@ export const validateGiftCard = async (
     giftCardCode: string,
 ): Promise<GiftCardValidationResponse> => {
     try {
+        const basedUrl = "https://service-wordle.beecele.com.au/wordoll/api"
+        //const basedUrl = "http://localhost:8080/wordoll/api"
         const response = await fetch(
-            `${API_CONFIG.baseUrl}/giftcard/validate/code?giftCardCode=${encodeURIComponent(giftCardCode)}`,
+            `${basedUrl}/giftcard/validate/code?giftCardCode=${encodeURIComponent(giftCardCode)}`,
         )
         if (!response.ok) {
             throw new Error('Failed to validate gift card')
