@@ -9,9 +9,8 @@ interface AccountLinkResponse {
     url: string
 }
 interface PayoutRequest {
-    transactionId: string
     userId: string
-    amount: number
+    giftCardCode: string
 }
 interface PayoutResponse {
     transferId: string

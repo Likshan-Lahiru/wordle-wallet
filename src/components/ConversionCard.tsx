@@ -126,26 +126,15 @@ const ConversionCard = () => {
     try {
       const token = sessionStorage.getItem('token')
       const userId = sessionStorage.getItem('userId')
-      // Use localTransactionId as a fallback if global state transactionId is null
-      const currentTransactionId =
-          transactionId ||
-          localTransactionId ||
-          sessionStorage.getItem('transactionId')
-      console.log(currentTransactionId, 'currentTransactionId')
-      console.log(token, 'token')
-      console.log(userId, 'userId')
-      if (!token || !userId || !currentTransactionId) {
+      if (!token || !userId) {
         toast.error('Missing required information. Please try again.')
         return
       }
-      // Extract the numeric value from the faceValue string (remove the $ sign)
-      const amount = parseFloat(faceValue.replace('$', ''))
-      // Process the payout
+      // Process the payout with only userId and giftCardCode
       await processPayout(
           {
-            transactionId: currentTransactionId,
             userId,
-            amount,
+            giftCardCode: giftCardCode,
           },
           token,
       )

@@ -11,7 +11,7 @@ export const validateGiftCard = async (
         const basedUrl = "https://service-wordle.beecele.com.au/wordoll/api"
         //const basedUrl = "http://localhost:8080/wordoll/api"
         const response = await fetch(
-            `${basedUrl}/giftcard/validate/code?giftCardCode=${encodeURIComponent(giftCardCode)}`,
+            `${basedUrl}/giftcard/validate/code?giftCardCode=${giftCardCode}`,
         )
         if (!response.ok) {
             throw new Error('Failed to validate gift card')
